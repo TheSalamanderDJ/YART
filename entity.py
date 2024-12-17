@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import math
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 
 from render_order import RenderOrder
@@ -10,6 +11,7 @@ if TYPE_CHECKING:
     from components.consumable import Consumable
     from components.fighter import Fighter
     from components.inventory import Inventory
+    from components.level import Level
     from game_map import GameMap
 
 T = TypeVar("T", bound="Entity")
@@ -68,7 +70,11 @@ class Entity:
                     self.gamemap.entities.remove(self)
             self.parent = gamemap
             gamemap.entities.add(self)
-
+            
+    def distance(self, x: int, y: int) -> float:
+        # Return the distance between the current entity and the given (x,y) coordinate.
+        return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
+            
     def move(self, dx: int, dy: int) -> None:
         # Move the entity by a given amount
         self.x += dx
@@ -85,6 +91,7 @@ class Actor(Entity):
         ai_cls: Type[BaseAI],
         fighter: Fighter,
         inventory: Inventory,
+        level: Level,
     ):
         super().__init__(
             x=x,
@@ -103,6 +110,9 @@ class Actor(Entity):
         
         self.inventory = inventory
         self.inventory.parent = self
+        
+        self.level = level
+        self.level.parent = self
 
     @property
     def is_alive(self) -> bool:
